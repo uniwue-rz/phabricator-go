@@ -5,42 +5,41 @@ import (
 )
 
 // GetDevices returns the list of Devices from Almanac
-func GetDevices(apiUrl string, token string) (devices Almanac, err error){
+func GetDevices(request *Request) (devices Almanac, err error) {
 	queryList := []Query{}
-	queryList = AddToken(queryList, token)
 	attachments := make(map[string]string)
 	attachments["properties"] = "1"
 	attachments["projects"] = "1"
 	queryList = append(queryList, Query{"map", "attachments", attachments})
 	queryList = append(queryList, Query{"string", "limit", "100"})
-	resp, err := SendApiQuery(apiUrl, "almanac.device.search", queryList)
-
+	request.SetMethod("almanac.device.search")
+	request.AddValues(queryList)
+	resp, err := SendRequest(request)
 	json.Unmarshal(resp, &devices)
 
 	return devices, err
 }
 
 // GetServices returns the list of available service
-func GetServices(apiUrl string, token string) (services Almanac, err error){
+func GetServices(request *Request) (services Almanac, err error) {
 	queryList := []Query{}
-	queryList = AddToken(queryList, token)
 	attachments := make(map[string]string)
 	attachments["properties"] = "1"
 	attachments["projects"] = "1"
 	attachments["bindings"] = "1"
 	queryList = append(queryList, Query{"map", "attachments", attachments})
 	queryList = append(queryList, Query{"string", "limit", "100"})
-	resp, err := SendApiQuery(apiUrl, "almanac.service.search", queryList)
-
+	request.AddValues(queryList)
+	request.SetMethod("almanac.service.search")
+	resp, err := request.Send()
 	json.Unmarshal(resp, &services)
 
 	return services, err
 }
 
 // GetDevice returns the specification for the given device
-func GetDevice(apiUrl string, token string, hostName string) (device Almanac, err error){
+func GetDevice(request *Request, hostName string) (device Almanac, err error) {
 	queryList := []Query{}
-	queryList = AddToken(queryList, token)
 	attachments := make(map[string]string)
 	attachments["properties"] = "1"
 	attachments["projects"] = "1"
@@ -49,16 +48,17 @@ func GetDevice(apiUrl string, token string, hostName string) (device Almanac, er
 	constraints["names"] = nameConstraint
 	queryList = append(queryList, Query{"map", "attachments", attachments})
 	queryList = append(queryList, Query{"mapArray", "constraints", constraints})
-	resp, err := SendApiQuery(apiUrl, "almanac.device.search", queryList)
+	request.SetMethod("almanac.device.search")
+	request.AddValues(queryList)
+	resp, err := request.Send()
 	json.Unmarshal(resp, &device)
 
 	return device, err
 }
 
 // GetService returns the specification for the given service
-func GetService(apiUrl string, token string, serviceName string) (service Almanac, err error) {
+func GetService(request *Request, serviceName string) (service Almanac, err error) {
 	queryList := []Query{}
-	queryList = AddToken(queryList, token)
 	attachments := make(map[string]string)
 	attachments["properties"] = "1"
 	attachments["projects"] = "1"
@@ -68,15 +68,28 @@ func GetService(apiUrl string, token string, serviceName string) (service Almana
 	constraints["names"] = nameConstraint
 	queryList = append(queryList, Query{"map", "attachments", attachments})
 	queryList = append(queryList, Query{"mapArray", "constraints", constraints})
-	resp, err := SendApiQuery(apiUrl, "almanac.service.search", queryList)
-
+	request.SetMethod("almanac.service.search")
+	request.AddValues(queryList)
+	resp, err := request.Send()
 	json.Unmarshal(resp, &service)
 
 	return service, err
 }
 
-// GetProperties returns the properties for the given device or service
-func GetProperties(apiUrl string, token string, name string, inventoryType string) (res map[string]string, err error){
+// GetProperties Returns the Properties for the result of Almanac Query
+func (almanac *Almanac) GetProperties() (properties []Property) {
+	for _, v := range almanac.Result.Data {
+		properties = append(properties, v.Attachments.Properties.Properties...)
+	}
 
-	return res, err
+	return properties
+}
+
+// GetBindings Returns the bindings for the result of Almanac Query
+func (almanac *Almanac) GetBindings() (bindings []Binding) {
+	for _, v := range almanac.Result.Data {
+		bindings = append(bindings, v.Attachments.Bindings.Bindings...)
+	}
+
+	return bindings
 }

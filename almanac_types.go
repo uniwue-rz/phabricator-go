@@ -22,33 +22,33 @@ type Attachment struct {
 	Projects struct {
 		ProjectPHIDs []string `json:"projectPHIDs"`
 	} `json:"projects"`
-	Bindings struct{
+	Bindings struct {
 		Bindings []Binding `json:"bindings"`
 	} `json:"bindings"`
 }
 
 // Binding describes the service given bindings
-type Binding struct{
-	Id int `json:"id"`
-	PHID string `json:"phid"`
+type Binding struct {
+	Id         int        `json:"id"`
+	PHID       string     `json:"phid"`
 	Properties []Property `json:"properties"`
-	Interface Interface `json:"interface"`
-	Disabled bool `json:"disabled"`
+	Interface  Interface  `json:"interface"`
+	Disabled   bool       `json:"disabled"`
 }
 
 // Interface describes the interface in a given binding
-type Interface struct{
-	Id int `json:"id"`
-	PHID string `json:"phid"`
-	Address string `json:"address"`
-	Port int `json:"port"`
-	Device ServiceDevice `json:"device"`
-	Network Network `json:"network"`
+type Interface struct {
+	Id      int           `json:"id"`
+	PHID    string        `json:"phid"`
+	Address string        `json:"address"`
+	Port    int           `json:"port"`
+	Device  ServiceDevice `json:"device"`
+	Network Network       `json:"network"`
 }
 
 // Network describes the network property of a given service
-type Network struct{
-	Id int `json:"id"`
+type Network struct {
+	Id   int    `json:"id"`
 	PHID string `json:"phid"`
 	Name string `json:"name"`
 }
@@ -59,7 +59,7 @@ type Field struct {
 	DateCreated  int    `json:"dateCreated"`
 	DateModified int    `json:"dateModified"`
 	Policy       Policy `json:"policy"`
-	ServiceType string `json:"serviceType"`
+	ServiceType  string `json:"serviceType"`
 }
 
 // Policy describes the policies in data results
@@ -76,10 +76,10 @@ type Property struct {
 }
 
 // ServiceDevice is special kind of device that is delivered by the service api
-type ServiceDevice struct{
-	Id int `json:"id"`
-	PHID string `json:"phid"`
-	Name string `json:"name"`
+type ServiceDevice struct {
+	Id         int        `json:"id"`
+	PHID       string     `json:"phid"`
+	Name       string     `json:"name"`
 	Properties []Property `json:"properties"`
 }
 

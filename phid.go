@@ -2,31 +2,40 @@ package phabricator
 
 import (
 	"encoding/json"
-	"errors"
 )
 
-// GetPhidByName Returns the PHID for the given object using the Monogram name.
-// For example for PassPhrase items you should use K{int}
-func GetPhidByName(apiUrl string, token string, name string) (phid string, err error) {
+// GetPhid Returns the PHID of given Monogram
+func GetPhid(request *Request, name string) (phid PHID, err error) {
 	queryList := []Query{}
-	queryList = AddToken(queryList, token)
 	queryList = append(queryList, Query{"array", "names", []string{name}})
-	resp, err := SendApiQuery(apiUrl, "phid.lookup", queryList)
-	var message APIResult
-	err = json.Unmarshal(resp, &message)
-	if err != nil {
-
-		panic(err)
-	}
-	resultType := TypeOf(message.Result)
-	if resultType == "[]interface {}" {
-
-		err = errors.New("The given name '" + name + "' did not belong to any phid")
-
-		return "", err
-	}
-
-	phid = message.Result.(map[string]interface{})[name].(map[string]interface{})["phid"].(string)
+	request.Method = "phid.lookup"
+	request.AddValues(queryList)
+	resp, err := SendRequest(request)
+	json.Unmarshal(resp, &phid)
 
 	return phid, err
+}
+
+// GetName Returns the name of the given object by its PHID
+func GetName(request *Request, phid string) (name PHID, err error) {
+	queryList := []Query{}
+	queryList = append(queryList, Query{"array", "phids", []string{phid}})
+	request.Method = "phid.query"
+	request.AddValues(queryList)
+	resp, err := SendRequest(request)
+	json.Unmarshal(resp, &name)
+
+	return name, err
+}
+
+// ExtractPhid returns the PHID string for the given PHID object
+func (phid *PHID) ExtractPhid(name string) string {
+	for k, v := range phid.Result {
+		if v.Name == k {
+
+			return v.PHID
+		}
+	}
+
+	return ""
 }

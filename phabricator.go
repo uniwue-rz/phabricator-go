@@ -2,9 +2,6 @@ package phabricator
 
 import (
 	"bytes"
-	"encoding/json"
-	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -12,137 +9,78 @@ import (
 	"strings"
 )
 
-// Query is the base type for the given system
-type Query struct {
-	QueryType string
-	Key       string
-	Value     interface{}
+// NewRequest creates a new request for the given one
+func NewRequest(apiUrl string, token string) Request {
+
+	return Request{apiUrl, token, "", url.Values{}}
 }
 
-// APIResult The result of the given API Query will be saved here first
-type APIResult struct{
-	Result interface{}
-	Error_Code string
-	Error_Info string
+// SetMethod sets the method for the given Request
+func (r *Request) SetMethod(method string) {
+	r.Method = method
 }
 
-// Cursor is the type that always describes the cursor
-type Cursor struct {
-	Limit string
-	After string
-	Before string
-	Order string
-}
-
-// CheckApiUrl checks for the given url that it is valid
-func CheckApiUrl(url string) (res bool, err error) {
-	_, err = http.Get(url)
-	if err != nil {
-
-		return false, err
-	}
-
-	return true, err
-}
-
-// SendApiQuery Creates a Query URL and send it to Conduit for the given values as a map string
-// There are 4 query types available. string, array, map and MapArray
-func SendApiQuery(apiUrl string, method string, values []Query) (res []byte, err error) {
-	// Create the buffer for the concat
-	var urlBuffer bytes.Buffer
-	urlBuffer.WriteString(apiUrl)
-	urlBuffer.WriteString(method)
-	urlValues := url.Values{}
+// AddValue adds a new value to the given request URL
+func (r *Request) AddValues(values []Query) {
 	for _, q := range values {
 		if q.QueryType == "array" {
 			for key, value := range q.Value.([]string) {
 				urlKey := q.Key + "[" + strconv.Itoa(key) + "]"
-				urlValues.Add(urlKey, value)
+				r.Values.Add(urlKey, value)
 			}
-		} else if q.QueryType == "map"{
+		} else if q.QueryType == "map" {
 			for key, value := range q.Value.(map[string]string) {
 				urlKey := q.Key + "[" + key + "]"
-				urlValues.Add(urlKey, value)
+				r.Values.Add(urlKey, value)
 			}
-		} else if q.QueryType == "mapArray"{
-			for key, value := range q.Value.(map[string][]string){
-				for i, insideValue :=range value{
-					urlKey := q.Key + "[" + key + "]"+"[" + strconv.Itoa(i) +"]"
-					urlValues.Add(urlKey, insideValue)
+		} else if q.QueryType == "mapArray" {
+			for key, value := range q.Value.(map[string][]string) {
+				for i, insideValue := range value {
+					urlKey := q.Key + "[" + key + "]" + "[" + strconv.Itoa(i) + "]"
+					r.Values.Add(urlKey, insideValue)
 				}
 			}
-		} else {
-			urlValues.Add(q.Key, q.Value.(string))
+		} else if q.QueryType == "string" {
+			r.Values.Add(q.Key, q.Value.(string))
 		}
 	}
-	valuesAsString := urlValues.Encode()
-	//log.Println(valuesAsString)
-	req, err := http.NewRequest("GET", urlBuffer.String(), strings.NewReader(valuesAsString))
+}
+
+// Reset restart the given request query string.
+func (r *Request) Reset() {
+	r.Values = url.Values{}
+}
+
+// Send sends the given request to the server. The result will be the error and response body bytes
+func (r *Request) Send() (resp []byte, err error) {
+	var urlBuffer bytes.Buffer
+	urlBuffer.WriteString(r.Url)
+	urlBuffer.WriteString(r.Method)
+	r.Values.Add("api.token", r.Token)
+	valuesAsString := r.Values.Encode()
+	httpRequest, err := http.NewRequest("GET", urlBuffer.String(), strings.NewReader(valuesAsString))
 	client := http.Client{}
-	resp, err := client.Do(req)
-	res, err = ioutil.ReadAll(resp.Body)
-
-	resp.Body.Close()
-
-	return res, err
+	queryResult, err := client.Do(httpRequest)
+	resp, err = ioutil.ReadAll(queryResult.Body)
+	queryResult.Body.Close()
+	// Always restart the request data so it can be reused with a new query
+	r.Reset()
+	return resp, err
 }
 
-// AddToString adds concats a string to another one
-func AddToString(base string, toAdd string, atStart bool) string {
-	var buffer bytes.Buffer
-	if atStart == false {
-		buffer.WriteString(base)
-		buffer.WriteString(toAdd)
-	} else {
-		buffer.WriteString(toAdd)
-		buffer.WriteString(base)
-	}
-
-	return buffer.String()
-}
-
-// TypeOf Returns the type of the given interface
-func TypeOf(v interface{}) string {
-	return fmt.Sprintf("%T", v)
-}
-
-// CheckApiLogin tries to login to the Phabricator API server
-func CheckApiLogin(apiUrl string, token string) (res bool, err error) {
-	queryList := []Query{}
-	queryList = AddToken(queryList, token)
-	resp, err := SendApiQuery(apiUrl, "user.whoami", queryList)
-	var m APIResult
-	json.Unmarshal(resp, &m)
-	if m.Result == "" && m.Error_Code != "" {
-		errorsMessage := AddToString(m.Error_Code, " : ", false)
-		errorsMessage = AddToString(errorsMessage, m.Error_Info, false)
-		err = errors.New(errorsMessage)
-
-		return false, err
-	}
-	return true, err
-}
-
-// AddToken adds token to the given query. It should be done for every query
-func AddToken(queries []Query, token string) []Query {
-	query := Query{"string", "api.token", token}
-	queries = append(queries, query)
-
-	return queries
-}
-
-// GetAvailableQueries returns the list of available methods from the application
-func GetAvailableMethods(apiUrl string, token string) (res []string, err error) {
-	queries := []Query{}
-	queries = AddToken(queries, token)
-	resp, err := SendApiQuery(apiUrl, "conduit.query", queries)
-
-	var dat map[string]interface{}
-	json.Unmarshal(resp, &dat)
-	result := dat["result"].(map[string]interface{})
-	for i := range result {
-		res = append(res, i)
-	}
-
-	return res, err
+// SendRequest send a request to the given phabricator server. And Returns the response as bytes array
+func SendRequest(request *Request) (resp []byte, err error) {
+	var urlBuffer bytes.Buffer
+	urlBuffer.WriteString(request.Url)
+	urlBuffer.WriteString(request.Method)
+	request.Values.Add("api.token", request.Token)
+	valuesAsString := request.Values.Encode()
+	httpRequest, err := http.NewRequest("GET", urlBuffer.String(), strings.NewReader(valuesAsString))
+	client := http.Client{}
+	queryResult, err := client.Do(httpRequest)
+	resp, err = ioutil.ReadAll(queryResult.Body)
+	queryResult.Body.Close()
+	// Always restart the request data so it can be reused with a new query
+	request.Reset()
+	return resp, err
 }
