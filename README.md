@@ -2,8 +2,8 @@
 
 This is a simple Phabricator Go Conduit API, covering Almanac and Passphrase.
 This API can be used with different automatization tools like and Ansible, Puppet, Chef or Salt to
-create a dynamic inventory of the devices, services and their properties. The not secure
-data can be saved in Phabricator as property and the secure data can be handled using the
+create a dynamic inventory of the devices, services and their properties. The insecure
+data can be saved in Phabricator as property of given device or service and the secure data can be handled using the
 Passphrase.
 
 ## Installation
@@ -26,7 +26,7 @@ resp, err := phabricator.GetService(&request, "serivce-name")
 
 ## Supported API
 
-This Conduit API wrapper for go support following Phabricator apis:
+This Conduit API wrapper for go supports following Phabricator apis:
 - `almanac`
 - `passphrase`
 - `phid`
