@@ -6,7 +6,6 @@ type PassPhrase struct {
 		Data   map[string]PassPhraseObject `json:"data"`
 		Cursor Cursor                      `json:"cursor"`
 	} `json:"result"`
-	Cursor    Cursor
 	ErrorCode string `json:"error_code"`
 	ErrorInfo string `json:"error_info"`
 }
