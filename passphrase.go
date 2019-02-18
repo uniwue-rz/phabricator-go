@@ -22,7 +22,7 @@ func GetAllPassPhrase(request *Request) (passPhrases PassPhrase, err error) {
 // The name should be a monogram
 func GetPassPhrasewithId(request *Request, name string) (passPhrase PassPhrase, err error){
 	var ids int;
-	_, err = fmt.Scanf(name,"(K:%5d)", &ids);
+	_, err = fmt.Scanf(name,"(K%5d)", &ids);
 	if err != nil {
 		return passPhrase, err
 	}
