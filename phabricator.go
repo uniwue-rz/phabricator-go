@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 )
@@ -11,7 +12,7 @@ import (
 // NewRequest creates a new request for the given one
 func NewRequest(apiUrl string, token string) Request {
 
-	return Request{apiUrl, token, "", Values{val: make(map[string][]string)}}
+	return Request{apiUrl, token, "", Values{val:url.Values{}}}
 }
 
 // SetMethod sets the method for the given Request
@@ -55,7 +56,7 @@ func (r *Request) AddValues(values []Query) {
 
 // Reset restart the given request query string.
 func (r *Request) Reset() {
-	r.Values = Values{val: make(map[string][]string)}
+	r.Values = Values{val:url.Values{}}
 }
 
 // Send sends the given request to the server. The result will be the error and response body bytes
