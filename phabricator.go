@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 )
@@ -12,7 +11,7 @@ import (
 // NewRequest creates a new request for the given one
 func NewRequest(apiUrl string, token string) Request {
 
-	return Request{apiUrl, token, "", url.Values{}}
+	return Request{apiUrl, token, "", Values{}}
 }
 
 // SetMethod sets the method for the given Request
@@ -26,29 +25,37 @@ func (r *Request) AddValues(values []Query) {
 		if q.QueryType == "array" {
 			for key, value := range q.Value.([]string) {
 				urlKey := q.Key + "[" + strconv.Itoa(key) + "]"
+				r.Values.Lock()
 				r.Values.Add(urlKey, value)
+				r.Values.Unlock()
 			}
 		} else if q.QueryType == "map" {
 			for key, value := range q.Value.(map[string]string) {
 				urlKey := q.Key + "[" + key + "]"
+				r.Values.Lock()
 				r.Values.Add(urlKey, value)
+				r.Values.Unlock()
 			}
 		} else if q.QueryType == "mapArray" {
 			for key, value := range q.Value.(map[string][]string) {
 				for i, insideValue := range value {
 					urlKey := q.Key + "[" + key + "]" + "[" + strconv.Itoa(i) + "]"
+					r.Values.Lock()
 					r.Values.Add(urlKey, insideValue)
+					r.Values.Unlock()
 				}
 			}
 		} else if q.QueryType == "string" {
+			r.Values.Lock()
 			r.Values.Add(q.Key, q.Value.(string))
+			r.Values.Unlock()
 		}
 	}
 }
 
 // Reset restart the given request query string.
 func (r *Request) Reset() {
-	r.Values = url.Values{}
+	r.Values = Values{}
 }
 
 // Send sends the given request to the server. The result will be the error and response body bytes
@@ -62,7 +69,7 @@ func (r *Request) Send() (resp []byte, err error) {
 	client := http.Client{}
 	queryResult, err := client.Do(httpRequest)
 	resp, err = ioutil.ReadAll(queryResult.Body)
-	queryResult.Body.Close()
+	err = queryResult.Body.Close()
 	// Always restart the request data so it can be reused with a new query
 	r.Reset()
 	return resp, err
@@ -79,7 +86,7 @@ func SendRequest(request *Request) (resp []byte, err error) {
 	client := http.Client{}
 	queryResult, err := client.Do(httpRequest)
 	resp, err = ioutil.ReadAll(queryResult.Body)
-	queryResult.Body.Close()
+	err = queryResult.Body.Close()
 	// Always restart the request data so it can be reused with a new query
 	request.Reset()
 	return resp, err

@@ -1,13 +1,21 @@
 package phabricator
 
-import "net/url"
+import (
+	"net/url"
+	"sync"
+)
 
 // Request is the placeholder for the given Request to the Phabricator server
 type Request struct {
 	Url    string     // Url that should be used to for the phabricator api
 	Token  string     // Token that should be used for the given request
 	Method string     // The method that should be used for the request
-	Values url.Values // The Values that should be parsed to the given URL string
+	Values Values // The Values that should be parsed to the given URL string
+}
+
+type Values struct {
+	sync.RWMutex
+	url.Values
 }
 
 // Query is the base type for the given system

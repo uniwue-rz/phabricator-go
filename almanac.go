@@ -6,7 +6,7 @@ import (
 
 // GetDevices returns the list of Devices from Almanac
 func GetDevices(request *Request) (devices Almanac, err error) {
-	queryList := []Query{}
+	queryList := make([]Query,0)
 	attachments := make(map[string]string)
 	attachments["properties"] = "1"
 	attachments["projects"] = "1"
@@ -15,14 +15,14 @@ func GetDevices(request *Request) (devices Almanac, err error) {
 	request.SetMethod("almanac.device.search")
 	request.AddValues(queryList)
 	resp, err := SendRequest(request)
-	json.Unmarshal(resp, &devices)
+	err = json.Unmarshal(resp, &devices)
 
 	return devices, err
 }
 
 // GetServices returns the list of available service
 func GetServices(request *Request) (services Almanac, err error) {
-	queryList := []Query{}
+	queryList := make([]Query,0)
 	attachments := make(map[string]string)
 	attachments["properties"] = "1"
 	attachments["projects"] = "1"
@@ -32,14 +32,14 @@ func GetServices(request *Request) (services Almanac, err error) {
 	request.AddValues(queryList)
 	request.SetMethod("almanac.service.search")
 	resp, err := request.Send()
-	json.Unmarshal(resp, &services)
+	err = json.Unmarshal(resp, &services)
 
 	return services, err
 }
 
 // GetDevice returns the specification for the given device
 func GetDevice(request *Request, hostName string) (device Almanac, err error) {
-	queryList := []Query{}
+	queryList := make([]Query,0)
 	attachments := make(map[string]string)
 	attachments["properties"] = "1"
 	attachments["projects"] = "1"
@@ -51,14 +51,14 @@ func GetDevice(request *Request, hostName string) (device Almanac, err error) {
 	request.SetMethod("almanac.device.search")
 	request.AddValues(queryList)
 	resp, err := request.Send()
-	json.Unmarshal(resp, &device)
+	err = json.Unmarshal(resp, &device)
 
 	return device, err
 }
 
 // GetService returns the specification for the given service
 func GetService(request *Request, serviceName string) (service Almanac, err error) {
-	queryList := []Query{}
+	queryList := make([]Query,0)
 	attachments := make(map[string]string)
 	attachments["properties"] = "1"
 	attachments["projects"] = "1"
@@ -71,7 +71,7 @@ func GetService(request *Request, serviceName string) (service Almanac, err erro
 	request.SetMethod("almanac.service.search")
 	request.AddValues(queryList)
 	resp, err := request.Send()
-	json.Unmarshal(resp, &service)
+	err = json.Unmarshal(resp, &service)
 
 	return service, err
 }

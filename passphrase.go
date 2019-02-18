@@ -6,13 +6,13 @@ import (
 
 // GetAllPassPhrase returns the list of all available passPhrases to the given user
 func GetAllPassPhrase(request *Request) (passPhrases PassPhrase, err error) {
-	queryList := []Query{}
+	queryList := make([]Query,0)
 	queryList = append(queryList, Query{"string", "needSecrets", "1"})
 	queryList = append(queryList, Query{"string", "limit", "100"})
 	request.AddValues(queryList)
 	request.SetMethod("passphrase.query")
 	resp, err := request.Send()
-	json.Unmarshal(resp, &passPhrases)
+	err = json.Unmarshal(resp, &passPhrases)
 
 	return passPhrases, err
 }
@@ -24,7 +24,7 @@ func GetPassPhrase(request *Request, name string) (passPhrase PassPhrase, err er
 	if err != nil {
 		return passPhrase, err
 	}
-	queryList := []Query{}
+	queryList := make([]Query,0)
 	queryList = append(queryList, Query{"string", "needSecrets", "1"})
 	queryList = append(queryList, Query{"array", "phids", []string{phid.ExtractPhid(name)}})
 	request.SetMethod("passphrase.query")
