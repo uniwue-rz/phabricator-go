@@ -2,12 +2,12 @@ package phabricator
 
 import (
 	"encoding/json"
-	"fmt"
+	"regexp"
 )
 
 // GetAllPassPhrase returns the list of all available passPhrases to the given user
 func GetAllPassPhrase(request *Request) (passPhrases PassPhrase, err error) {
-	queryList := make([]Query,0)
+	queryList := make([]Query, 0)
 	queryList = append(queryList, Query{"string", "needSecrets", "1"})
 	queryList = append(queryList, Query{"string", "limit", "100"})
 	request.AddValues(queryList)
@@ -20,15 +20,13 @@ func GetAllPassPhrase(request *Request) (passPhrases PassPhrase, err error) {
 
 // Get the passphrase from the id
 // The name should be a monogram
-func GetPassPhrasewithId(request *Request, name string) (passPhrase PassPhrase, err error){
-	var ids int;
-	_, err = fmt.Scanf(name,"(K%5d)", &ids);
-	if err != nil {
-		return passPhrase, err
-	}
-	queryList := make([]Query,0)
+func GetPassPhrasewithId(request *Request, name string) (passPhrase PassPhrase, err error) {
+	var idsString []string
+	re := regexp.MustCompile("[0-9]+")
+	idsString = re.FindAllString(name, -1);
+	queryList := make([]Query, 0)
 	queryList = append(queryList, Query{"string", "needSecrets", "1"})
-	queryList = append(queryList, Query{"array", "ids", []int{ids}})
+	queryList = append(queryList, Query{"array", "ids", idsString})
 	request.SetMethod("passphrase.query")
 	request.AddValues(queryList)
 	resp, err := request.Send()
@@ -44,7 +42,7 @@ func GetPassPhrase(request *Request, name string) (passPhrase PassPhrase, err er
 	if err != nil {
 		return passPhrase, err
 	}
-	queryList := make([]Query,0)
+	queryList := make([]Query, 0)
 	queryList = append(queryList, Query{"string", "needSecrets", "1"})
 	queryList = append(queryList, Query{"array", "phids", []string{phid.ExtractPhid(name)}})
 	request.SetMethod("passphrase.query")
