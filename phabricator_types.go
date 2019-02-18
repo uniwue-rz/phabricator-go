@@ -15,7 +15,7 @@ type Request struct {
 
 type Values struct {
 	sync.RWMutex
-	url.Values
+	val url.Values
 }
 
 // Query is the base type for the given system

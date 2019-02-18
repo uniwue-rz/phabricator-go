@@ -26,14 +26,14 @@ func (r *Request) AddValues(values []Query) {
 			for key, value := range q.Value.([]string) {
 				urlKey := q.Key + "[" + strconv.Itoa(key) + "]"
 				r.Values.Lock()
-				r.Values.Add(urlKey, value)
+				r.Values.val.Add(urlKey, value)
 				r.Values.Unlock()
 			}
 		} else if q.QueryType == "map" {
 			for key, value := range q.Value.(map[string]string) {
 				urlKey := q.Key + "[" + key + "]"
 				r.Values.Lock()
-				r.Values.Add(urlKey, value)
+				r.Values.val.Add(urlKey, value)
 				r.Values.Unlock()
 			}
 		} else if q.QueryType == "mapArray" {
@@ -41,13 +41,13 @@ func (r *Request) AddValues(values []Query) {
 				for i, insideValue := range value {
 					urlKey := q.Key + "[" + key + "]" + "[" + strconv.Itoa(i) + "]"
 					r.Values.Lock()
-					r.Values.Add(urlKey, insideValue)
+					r.Values.val.Add(urlKey, insideValue)
 					r.Values.Unlock()
 				}
 			}
 		} else if q.QueryType == "string" {
 			r.Values.Lock()
-			r.Values.Add(q.Key, q.Value.(string))
+			r.Values.val.Add(q.Key, q.Value.(string))
 			r.Values.Unlock()
 		}
 	}
@@ -55,7 +55,7 @@ func (r *Request) AddValues(values []Query) {
 
 // Reset restart the given request query string.
 func (r *Request) Reset() {
-	r.Values = Values{}
+	r.Values = Values{val: make(map[string][]string)}
 }
 
 // Send sends the given request to the server. The result will be the error and response body bytes
@@ -63,8 +63,10 @@ func (r *Request) Send() (resp []byte, err error) {
 	var urlBuffer bytes.Buffer
 	urlBuffer.WriteString(r.Url)
 	urlBuffer.WriteString(r.Method)
-	r.Values.Add("api.token", r.Token)
-	valuesAsString := r.Values.Encode()
+	r.Values.Lock()
+	r.Values.val.Add("api.token", r.Token)
+	r.Values.Unlock()
+	valuesAsString := r.Values.val.Encode()
 	httpRequest, err := http.NewRequest("GET", urlBuffer.String(), strings.NewReader(valuesAsString))
 	client := http.Client{}
 	queryResult, err := client.Do(httpRequest)
@@ -80,8 +82,10 @@ func SendRequest(request *Request) (resp []byte, err error) {
 	var urlBuffer bytes.Buffer
 	urlBuffer.WriteString(request.Url)
 	urlBuffer.WriteString(request.Method)
-	request.Values.Add("api.token", request.Token)
-	valuesAsString := request.Values.Encode()
+	request.Values.Lock()
+	request.Values.val.Add("api.token", request.Token)
+	request.Values.Unlock()
+	valuesAsString := request.Values.val.Encode()
 	httpRequest, err := http.NewRequest("GET", urlBuffer.String(), strings.NewReader(valuesAsString))
 	client := http.Client{}
 	queryResult, err := client.Do(httpRequest)
