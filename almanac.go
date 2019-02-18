@@ -2,6 +2,7 @@ package phabricator
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
 // GetDevices returns the list of Devices from Almanac
@@ -16,7 +17,7 @@ func GetDevices(request *Request) (devices Almanac, err error) {
 	request.AddValues(queryList)
 	resp, err := SendRequest(request)
 	err = json.Unmarshal(resp, &devices)
-
+	fmt.Println(devices)
 	return devices, err
 }
 
@@ -33,7 +34,7 @@ func GetServices(request *Request) (services Almanac, err error) {
 	request.SetMethod("almanac.service.search")
 	resp, err := request.Send()
 	err = json.Unmarshal(resp, &services)
-
+	fmt.Println(services)
 	return services, err
 }
 
@@ -52,6 +53,7 @@ func GetDevice(request *Request, hostName string) (device Almanac, err error) {
 	request.AddValues(queryList)
 	resp, err := request.Send()
 	err = json.Unmarshal(resp, &device)
+	fmt.Println(device)
 
 	return device, err
 }
@@ -72,6 +74,7 @@ func GetService(request *Request, serviceName string) (service Almanac, err erro
 	request.AddValues(queryList)
 	resp, err := request.Send()
 	err = json.Unmarshal(resp, &service)
+	fmt.Println(service)
 
 	return service, err
 }
