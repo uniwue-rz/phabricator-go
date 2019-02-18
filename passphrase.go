@@ -20,7 +20,7 @@ func GetAllPassPhrase(request *Request) (passPhrases PassPhrase, err error) {
 
 // Get the passphrase from the id
 // The name should be a monogram
-func getPassPhrasewithId(request *Request, name string) (passPhrase PassPhrase, err error){
+func GetPassPhrasewithId(request *Request, name string) (passPhrase PassPhrase, err error){
 	var ids int;
 	_, err = fmt.Scanf(name,"(K:%5d)", &ids);
 	if err != nil {
