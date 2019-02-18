@@ -2,12 +2,11 @@ package phabricator
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
 // GetDevices returns the list of Devices from Almanac
 func GetDevices(request *Request) (devices Almanac, err error) {
-	queryList := make([]Query,0)
+	queryList := make([]Query, 0)
 	attachments := make(map[string]string)
 	attachments["properties"] = "1"
 	attachments["projects"] = "1"
@@ -17,13 +16,13 @@ func GetDevices(request *Request) (devices Almanac, err error) {
 	request.AddValues(queryList)
 	resp, err := SendRequest(request)
 	err = json.Unmarshal(resp, &devices)
-	fmt.Println(devices)
+
 	return devices, err
 }
 
 // GetServices returns the list of available service
 func GetServices(request *Request) (services Almanac, err error) {
-	queryList := make([]Query,0)
+	queryList := make([]Query, 0)
 	attachments := make(map[string]string)
 	attachments["properties"] = "1"
 	attachments["projects"] = "1"
@@ -34,13 +33,13 @@ func GetServices(request *Request) (services Almanac, err error) {
 	request.SetMethod("almanac.service.search")
 	resp, err := request.Send()
 	err = json.Unmarshal(resp, &services)
-	fmt.Println(services)
+
 	return services, err
 }
 
 // GetDevice returns the specification for the given device
 func GetDevice(request *Request, hostName string) (device Almanac, err error) {
-	queryList := make([]Query,0)
+	queryList := make([]Query, 0)
 	attachments := make(map[string]string)
 	attachments["properties"] = "1"
 	attachments["projects"] = "1"
@@ -49,18 +48,18 @@ func GetDevice(request *Request, hostName string) (device Almanac, err error) {
 	constraints["names"] = nameConstraint
 	queryList = append(queryList, Query{"map", "attachments", attachments})
 	queryList = append(queryList, Query{"mapArray", "constraints", constraints})
+	queryList = append(queryList, Query{"string", "limit", "100"})
 	request.SetMethod("almanac.device.search")
 	request.AddValues(queryList)
 	resp, err := request.Send()
 	err = json.Unmarshal(resp, &device)
-	fmt.Println(device)
 
 	return device, err
 }
 
 // GetService returns the specification for the given service
 func GetService(request *Request, serviceName string) (service Almanac, err error) {
-	queryList := make([]Query,0)
+	queryList := make([]Query, 0)
 	attachments := make(map[string]string)
 	attachments["properties"] = "1"
 	attachments["projects"] = "1"
@@ -70,11 +69,11 @@ func GetService(request *Request, serviceName string) (service Almanac, err erro
 	constraints["names"] = nameConstraint
 	queryList = append(queryList, Query{"map", "attachments", attachments})
 	queryList = append(queryList, Query{"mapArray", "constraints", constraints})
+	queryList = append(queryList, Query{"string", "limit", "100"})
 	request.SetMethod("almanac.service.search")
 	request.AddValues(queryList)
 	resp, err := request.Send()
 	err = json.Unmarshal(resp, &service)
-	fmt.Println(service)
 
 	return service, err
 }

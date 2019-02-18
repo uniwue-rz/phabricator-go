@@ -2,7 +2,6 @@ package phabricator
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -69,7 +68,6 @@ func (r *Request) Send() (resp []byte, err error) {
 	r.Values.val.Add("api.token", r.Token)
 	r.Values.Unlock()
 	valuesAsString := r.Values.val.Encode()
-	fmt.Println(valuesAsString)
 	httpRequest, err := http.NewRequest("GET", urlBuffer.String(), strings.NewReader(valuesAsString))
 	client := http.Client{}
 	queryResult, err := client.Do(httpRequest)
