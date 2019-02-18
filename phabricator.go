@@ -11,7 +11,7 @@ import (
 // NewRequest creates a new request for the given one
 func NewRequest(apiUrl string, token string) Request {
 
-	return Request{apiUrl, token, "", Values{}}
+	return Request{apiUrl, token, "", Values{val: make(map[string][]string)}}
 }
 
 // SetMethod sets the method for the given Request
