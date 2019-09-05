@@ -13,6 +13,7 @@ type Almanac struct {
 	ErrorCode string `json:"error_code"`
 	ErrorInfo string `json:"error_info"`
 }
+type FutureAlmanac chan Almanac
 
 // Attachments are handled using this
 type Attachment struct {
