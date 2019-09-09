@@ -1,5 +1,8 @@
 package phabricator
 
+// The Future Almanac Channel
+type FutureAlmanac chan Almanac
+
 // AlmanacDevices contains all the data related to a list of Almanac Devices
 type Almanac struct {
 	Result struct {
@@ -13,7 +16,6 @@ type Almanac struct {
 	ErrorCode string `json:"error_code"`
 	ErrorInfo string `json:"error_info"`
 }
-type FutureAlmanac chan Almanac
 
 // Attachments are handled using this
 type Attachment struct {

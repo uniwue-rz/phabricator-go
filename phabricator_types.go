@@ -1,15 +1,24 @@
 package phabricator
 
 import (
+	"net/http"
 	"net/url"
 	"sync"
 )
 
+type FutureError chan error
+
+type Phabricator struct {
+	ApiUrl   string
+	ApiToken string
+	Client   http.Client
+}
+
 // Request is the placeholder for the given Request to the Phabricator server
 type Request struct {
-	Url    string     // Url that should be used to for the phabricator api
-	Token  string     // Token that should be used for the given request
-	Method string     // The method that should be used for the request
+	Url    string // Url that should be used to for the phabricator api
+	Token  string // Token that should be used for the given request
+	Method string // The method that should be used for the request
 	Values Values // The Values that should be parsed to the given URL string
 }
 
